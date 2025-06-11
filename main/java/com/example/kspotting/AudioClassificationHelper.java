@@ -14,7 +14,7 @@ import org.tensorflow.lite.support.label.Category;
 import org.tensorflow.lite.task.audio.classifier.AudioClassifier;
 import org.tensorflow.lite.task.audio.classifier.AudioClassifier.AudioClassifierOptions;
 import org.tensorflow.lite.task.core.BaseOptions;
-import org.tensorflow.lite.task.core.Classifications;
+// Rimosso import Classifications - non esiste più
 
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 // Helper per la classificazione audio con TensorFlow Lite
 public class AudioClassificationHelper {
@@ -66,8 +65,8 @@ public class AudioClassificationHelper {
 
             // Configura la GPU delegate se disponibile per migliori prestazioni
             CompatibilityList compatList = new CompatibilityList();
-            if (compatList.isDelegateSupported(GpuDelegate.class)) // Verifica la compatibilità della GPU per GpuDelegate
-            {
+            // Metodo corretto per verificare la compatibilità GPU
+            if (compatList.isDelegateSupported()) {
                 // Se la GPU è compatibile, aggiungila come delegato
                 baseOptionsBuilder.useGpu();
                 Log.d(TAG, "Utilizzo della GPU delegate per la classificazione audio.");
@@ -89,8 +88,8 @@ public class AudioClassificationHelper {
             tensorAudio = classifier.createInputTensorAudio();
 
             // Configura AudioRecord per l'acquisizione audio
-            // Utilizza i parametri audio dal classificatore per la frequenza di campionamento e il formato
-            int sampleRate = classifier.getRequiredInputTensorAudioFormat().getSampleRate();
+            // Usa parametri audio standard per TensorFlow Lite Audio
+            int sampleRate = 16000; // Frequenza standard per speech commands
             int channelConfig = AudioFormat.CHANNEL_IN_MONO;
             int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 
@@ -162,18 +161,13 @@ public class AudioClassificationHelper {
 
                         // Esegui l'inferenza e ottieni i risultati
                         long startTime = System.currentTimeMillis();
-                        // Il metodo classify() restituisce List<Classifications>
-                        List<Classifications> classifications = classifier.classify(tensorAudio);
+                        // Il metodo classify() restituisce direttamente List<Category>
+                        List<Category> results = classifier.classify(tensorAudio);
                         long endTime = System.currentTimeMillis();
                         long inferenceTime = endTime - startTime;
 
-                        // Estrai la lista di Category dalla prima Classifications (solitamente una sola per l'audio)
-                        List<Category> output = classifications.stream()
-                                .flatMap(c -> c.getCategories().stream())
-                                .collect(Collectors.toList());
-
                         // Invia i risultati al listener
-                        classifierListener.onResults(output, inferenceTime);
+                        classifierListener.onResults(results, inferenceTime);
                     }
                 },
                 0, // Ritardo iniziale
