@@ -7,13 +7,16 @@ import android.media.MediaRecorder;
 import android.os.Process;
 import android.util.Log;
 
-import org.tensorflow.lite.gpu.GpuDelegate;
+// Rimosse importazioni relative alla GPU, non più necessarie
+// import org.tensorflow.lite.gpu.CompatibilityList;
+// import org.tensorflow.lite.gpu.GpuDelegate;
+
 import org.tensorflow.lite.support.audio.TensorAudio;
 import org.tensorflow.lite.support.label.Category;
 import org.tensorflow.lite.task.audio.classifier.AudioClassifier;
 import org.tensorflow.lite.task.audio.classifier.AudioClassifier.AudioClassifierOptions;
-import org.tensorflow.lite.task.audio.classifier.Classifications;
 import org.tensorflow.lite.task.core.BaseOptions;
+import org.tensorflow.lite.task.audio.classifier.Classifications; // Import corretto per Classifications
 
 import java.io.IOException;
 import java.util.List;
@@ -21,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 // Helper per la classificazione audio con TensorFlow Lite
 public class AudioClassificationHelper {
@@ -62,15 +66,10 @@ public class AudioClassificationHelper {
             BaseOptions.Builder baseOptionsBuilder = BaseOptions.builder()
                     .setNumThreads(2); // Numero di thread per l'inferenza
 
-            // Configura la GPU delegate se disponibile per migliori prestazioni
-            // Nelle versioni recenti di TensorFlow Lite, si usa un approccio try-catch
-            try {
-                baseOptionsBuilder.useGpu();
-                Log.d(TAG, "Utilizzo della GPU delegate per la classificazione audio.");
-            } catch (Exception e) {
-                Log.d(TAG, "GPU delegate non disponibile o non compatibile. Utilizzo della CPU: " + e.getMessage());
-                // Non fare nulla - userà automaticamente la CPU
-            }
+            // Rimosso il blocco di configurazione della GPU per semplicità
+            // Log.d(TAG, "Utilizzo della CPU per la classificazione audio.");
+            // Non è necessario aggiungere una riga .useCpu() esplicitamente, è il default.
+
 
             // Crea le opzioni per il classificatore audio
             AudioClassifierOptions options =
@@ -86,8 +85,8 @@ public class AudioClassificationHelper {
             tensorAudio = classifier.createInputTensorAudio();
 
             // Configura AudioRecord per l'acquisizione audio
-            // Usa parametri audio standard per TensorFlow Lite Audio
-            int sampleRate = 16000; // Frequenza standard per speech commands
+            // Utilizza i parametri audio dal classificatore per la frequenza di campionamento e il formato
+            int sampleRate = classifier.getRequiredTensorAudioFormat().getSampleRate();
             int channelConfig = AudioFormat.CHANNEL_IN_MONO;
             int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 
@@ -121,7 +120,7 @@ public class AudioClassificationHelper {
             Log.e(TAG, "Errore nel caricamento del modello TFLite: " + e.getMessage());
             classifierListener.onError("Errore nel caricamento del modello: " + e.getMessage());
         } catch (RuntimeException e) {
-            // Cattura errori comuni durante l'inizializzazione del classificatore o della GPU delegate
+            // Cattura errori comuni durante l'inizializzazione del classificatore
             Log.e(TAG, "Errore in fase di runtime durante l'inizializzazione: " + e.getMessage());
             classifierListener.onError("Errore di runtime nell'inizializzazione: " + e.getMessage() + ". Assicurati che il modello sia valido.");
         }
@@ -154,26 +153,21 @@ public class AudioClassificationHelper {
                         Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO);
 
                         // Carica i campioni audio dal record nel TensorAudio
-                        // Questo metodo gestisce internamente la lettura nel buffer corretto
                         tensorAudio.load(record);
 
                         // Esegui l'inferenza e ottieni i risultati
                         long startTime = System.currentTimeMillis();
-                        // Il metodo classify() restituisce List<Classifications>, non List<Category>
                         List<Classifications> classifications = classifier.classify(tensorAudio);
                         long endTime = System.currentTimeMillis();
                         long inferenceTime = endTime - startTime;
 
-                        // Estrai le categorie dal primo elemento delle classificazioni
-                        List<Category> results = null;
-                        if (!classifications.isEmpty()) {
-                            results = classifications.get(0).getCategories();
-                        }
+                        // Estrai la lista di Category dalla prima Classifications
+                        List<Category> output = classifications.stream()
+                                .flatMap(c -> c.getCategories().stream())
+                                .collect(Collectors.toList());
 
                         // Invia i risultati al listener
-                        if (results != null) {
-                            classifierListener.onResults(results, inferenceTime);
-                        }
+                        classifierListener.onResults(output, inferenceTime);
                     }
                 },
                 0, // Ritardo iniziale

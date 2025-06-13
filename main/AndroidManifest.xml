@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- L'attributo 'package' è stato rimosso qui; il namespace è definito in app/build.gradle -->
 
-    <!-- Permesso necessario per registrare audio -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
