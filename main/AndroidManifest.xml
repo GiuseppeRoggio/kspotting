@@ -2,8 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permesso per registrare audio dal microfono -->
+    <!-- Permesso necessario per registrare audio dal microfono -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Permesso necessario per i Foreground Services (per Android 9+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Permesso specifico per l'accesso al microfono in foreground su Android 10+ (API 29+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- Permesso per mantenere il service attivo (opzionale, utile per evitare che venga terminato) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Permesso per inviare notifiche (richiesto da Android 13 / API 33+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
 
     <application
         android:allowBackup="true"
@@ -23,6 +32,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Dichiarazione del Service per la classificazione audio -->
+        <service
+            android:name=".AudioClassificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="microphone">
+            <!--
+            foregroundServiceType="microphone" è richiesto per Android 14+ (API 34+)
+            quando il service usa il microfono in background
+            -->
+        </service>
 
     </application>
 

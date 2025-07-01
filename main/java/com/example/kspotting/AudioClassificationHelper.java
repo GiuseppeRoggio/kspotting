@@ -27,7 +27,7 @@ public class AudioClassificationHelper {
 
     private static final String TAG = "AudioClassifierHelper";
     private static final String MODEL_NAME = "speech_commands.tflite";
-    private static final long CLASSIFIER_INTERVAL_MS = 200;
+    private static final long CLASSIFIER_INTERVAL_MS = 200; // Intervallo di inferenza per responsività
 
     private final Context context;
     private final ClassifierListener classifierListener;
