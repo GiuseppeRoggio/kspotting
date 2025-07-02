@@ -7,21 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Typeface; // Import per il grassetto
 import android.os.Bundle;
 import android.os.Build;
 import android.os.Parcelable;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan; // Import per dimensione testo
-import android.text.style.StyleSpan; // Import per stile grassetto
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ScrollView; // Import per ScrollView
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView recentInferencesTextView;
     private TextView knownCommandsListTextView;
     private Button recordButton;
-    private ScrollView logScrollView; // Dichiarazione della ScrollView
+    private ScrollView logScrollView;
 
     private boolean isAudioServiceRunning = false;
 
@@ -133,57 +125,26 @@ public class MainActivity extends AppCompatActivity {
             this.timestamp = timestamp;
         }
 
-        public SpannableString formatForDisplay() {
+        public String formatForDisplay() {
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
             String currentTimeFormatted = sdf.format(new Date(timestamp));
             String displayLabel = label;
             if (label.equals("_background_noise_")) displayLabel = "Rumore di Fondo";
             if (label.equals("silence")) displayLabel = "Silenzio";
 
-            String formattedText;
             String normalizedLabel = label.toLowerCase(Locale.ROOT).trim();
 
             if (SENSITIVE_WORDS.contains(normalizedLabel)) {
-                // Formattazione speciale per parole sensibili
-                formattedText = String.format(Locale.getDefault(),
+                // Messaggio di attenzione per parole sensibili
+                return String.format(Locale.getDefault(),
                         "%s - ATTENZIONE: RILEVATA PAROLA SENSIBILE - %s: %.2f%%\n",
                         currentTimeFormatted, displayLabel.toUpperCase(Locale.ROOT), confidence * 100);
             } else {
                 // Formattazione standard
-                formattedText = String.format(Locale.getDefault(),
+                return String.format(Locale.getDefault(),
                         "%s - %s: %.2f%%\n",
                         currentTimeFormatted, displayLabel, confidence * 100);
             }
-
-            SpannableString spannableString = new SpannableString(formattedText);
-
-            if (SENSITIVE_WORDS.contains(normalizedLabel)) {
-                // Colore di sfondo per l'intera riga della parola sensibile
-                // Ho scelto un giallo molto chiaro per un buon contrasto
-                spannableString.setSpan(new BackgroundColorSpan(Color.parseColor("#FFFDD0")), // Giallo pallido
-                        0,
-                        formattedText.length(),
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                // Colore del testo rosso, grassetto e leggermente più grande per la parola chiave
-                String wordToHighlight = displayLabel.toUpperCase(Locale.ROOT);
-                int startIndex = formattedText.indexOf(wordToHighlight);
-                if (startIndex != -1) {
-                    spannableString.setSpan(new ForegroundColorSpan(Color.RED),
-                            startIndex,
-                            startIndex + wordToHighlight.length(),
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    spannableString.setSpan(new StyleSpan(Typeface.BOLD), // Grassetto
-                            startIndex,
-                            startIndex + wordToHighlight.length(),
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    spannableString.setSpan(new RelativeSizeSpan(1.1f), // Leggermente più grande
-                            startIndex,
-                            startIndex + wordToHighlight.length(),
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
-            }
-            return spannableString;
         }
     }
 
@@ -201,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         recentInferencesTextView = findViewById(R.id.recent_inferences_text_view);
         knownCommandsListTextView = findViewById(R.id.known_commands_list_text_view);
         recordButton = findViewById(R.id.record_button);
-        logScrollView = findViewById(R.id.log_scroll_view); // Inizializzazione della ScrollView
+        logScrollView = findViewById(R.id.log_scroll_view);
 
         recentLogEntriesList = new LinkedList<>();
 
@@ -579,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
         for (RecentLogEntry entry : recentLogEntriesList) {
             sb.append(entry.formatForDisplay());
         }
-        recentInferencesTextView.setText(sb, TextView.BufferType.SPANNABLE);
+        recentInferencesTextView.setText(sb.toString());
         // Assicurati che lo scroll sia sempre in basso per vedere gli ultimi log
         logScrollView.post(() -> logScrollView.fullScroll(View.FOCUS_DOWN));
     }
