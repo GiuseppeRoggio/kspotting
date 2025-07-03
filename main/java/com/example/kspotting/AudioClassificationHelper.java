@@ -1,4 +1,4 @@
-package com.example.kspotting; // Il tuo package name
+package com.example.kspotting; 
 
 import android.content.Context;
 import android.media.AudioFormat;

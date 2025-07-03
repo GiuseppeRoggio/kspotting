@@ -35,7 +35,7 @@ public class AudioClassificationService extends Service implements AudioClassifi
     private static final int SENSITIVE_WORDS_NOTIFICATION_ID = 2;
     private static final List<String> SENSITIVE_WORDS = Arrays.asList("stop", "off");
 
-    private static final float UI_BACKGROUND_LOG_THRESHOLD = 0.20f;
+    private static final float UI_BACKGROUND_LOG_THRESHOLD = 0.80f;
     private static final long UI_BACKGROUND_LOG_GROUPING_TIME_MS = 1000;
 
     public static final String ACTION_START_CLASSIFICATION = "com.example.kspotting.START_CLASSIFICATION";
