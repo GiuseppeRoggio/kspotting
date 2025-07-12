@@ -1,15 +1,20 @@
 # kspotting
 Project for Mobile Programming - 6CFU - Unict - Prof. Massimo Orazio Spata
+
 Relazione App KeyWord Spotting
 Studente: Roggio Giuseppe – 1000050655
+
 Il progetto che ho scelto di implementare tra quelli proposti è stato il n.1 l'applicazione di
 riconoscimento vocale. L'app ha lo scopo di analizzare l'audio in tempo reale ed avvisare
 l'utente tramite log e notifiche quando intercetta parole del suo vocabolario, andando
 anche a differenziare parole comuni da parole sensibili.
+
 Funzionamento dell'App
 L'applicazione KeyWord Spotting è progettata per ascoltare continuamente l'ambiente
 tramite il microfono del dispositivo mobile e identificare le parole riconosciute dal modello
-speech_commands.tflite. Il flusso di funzionamento è il seguente:
+speech_commands.tflite. 
+
+Il flusso di funzionamento è il seguente:
 1. Acquisizione Audio: L'applicazione cattura i dati audio in tempo reale dal microfono del
 dispositivo.
 2. Pre-elaborazione: L'audio grezzo acquisito viene trasformato in un formato (TensorAudio)
@@ -24,7 +29,9 @@ la parola con il punteggio di confidenza più elevato. Basandosi su questa ident
 l'app può aggiornare l'interfaccia utente in tempo reale, registrare l'evento in una
 cronologia dei log e, in caso di rilevamento di parole "sensibili" (come "stop" o "off"),
 inviare notifiche push all'utente per avvisarlo.
+
 Alcuni cenni agli strumenti suggeriti e adottati.
+
 Introduzione a TensorFlow Lite
 TensorFlow Lite è un framework open-source sviluppato da Google, specificamente
 ottimizzato per l'inferenza di modelli di machine learning su dispositivi con risorse limitate,
@@ -49,6 +56,7 @@ di un set limitato di comandi vocali brevi e singoli. È stato addestrato su un 
 specifico che include parole come "up", "down", "left", "right", "on", "off", "stop", "go", oltre
 a categorie generiche come "silence" (silenzio) e "background" (rumore di fondo o parole
 non riconosciute).
+
 Difficoltà di Classificazione con Modelli Pre-addestrati
 L'adozione di un modello pre-addestrato come speech_commands.tflite ha notevolmente
 accelerato lo sviluppo dell'applicazione, consentendo di concentrarsi sull'integrazione delle
@@ -79,15 +87,18 @@ Nonostante ciò, in condizioni ambientali ottimali (es. una stanza con basso rum
 fondo), il modello può fornire inferenze con confidenze superiori al 90%.
 • Mancanza di Personalizzazione: Non era previsto nel progetto l' addestramento
 ulteriormente con parole o dati specifici.
+
 Per adempiere al requisito di notifica in tempo reale e cronologia degli eventi, e data
 la limitatezza del vocabolario del modello, sono state identificate per scopi didattici le
 parole "off" e "stop" come "sensibili". Quando il modello classifica queste parole con
 sufficiente confidenza, l'app non solo le registra nei log con un messaggio personalizzato
 rispetto alle altre classificazioni, ma invia anche una notifica push all'utente,
 indipendentemente dal fatto che l'app sia in foreground o in background.
+
 Analisi Dettagliata dei File del Progetto
 Di seguito viene fornita una descrizione approfondita di ogni file del progetto, illustrando il
 suo ruolo e le sue interazioni con gli altri componenti dell'applicazione.
+
 1. AndroidManifest.xml
 Questo file è la dichiarazione fondamentale dell'applicazione Android, definendone la
 struttura, i componenti principali, i permessi richiesti e le funzionalità hardware necessarie
@@ -128,6 +139,7 @@ comprendere l'app. Senza le dichiarazioni corrette in questo file, l'applicazion
 avrebbe i permessi necessari per registrare l'audio o eseguire il servizio in background,
 non potrebbe inviare notifiche push all'utente e i suoi componenti non sarebbero
 riconosciuti dal sistema operativo.
+
 2. AudioClassificationHelper.java
 Questa classe funge da helper per la logica di classificazione audio. Incapsula
 l'interazione con le librerie TensorFlow Lite per l'elaborazione audio e la gestione
@@ -172,6 +184,7 @@ Interazione: AudioClassificationHelper è utilizzato esclusivamente da
 AudioClassificationService. Il servizio è responsabile di inizializzare, avviare e fermare la
 classificazione tramite questo helper, ricevendo i risultati e gli errori attraverso l'interfaccia
 ClassifierListener.
+
 3. AudioClassificationService.java
 Questa classe estende android.app.Service, il che le consente di eseguire operazioni in
 background senza un'interfaccia utente diretta. Funge da collegamento tra la logica di
@@ -233,6 +246,7 @@ Interazione: AudioClassificationService permette all'app di lavorare in backgrou
 gestisce l'AudioClassificationHelper. Comunica bidirezionalmente con la MainActivity tramite
 Intent e LocalBroadcastManager per aggiornare l'interfaccia utente e ricevere comandi, e
 interagisce con il sistema Android per la gestione delle notifiche.
+
 4. ClassificationLogEntry.java
 Questa è una classe che descrive il modello di dati per incapsulare un singolo evento di
 classificazione audio.
@@ -243,7 +257,6 @@ classificazione audio.
 • confidence: Un float che indica il punteggio di confidenza (probabilità) della classificazione.
 • timestamp: Un long che registra il momento esatto (in millisecondi) in cui è avvenuta
 l'inferenza.
-•
 • Implementazione Parcelable: Implementa l'interfaccia Parcelable di Android. Questa
 implementazione è cruciale perché consente di serializzare e deserializzare in modo
 efficiente gli oggetti ClassificationLogEntry. Ciò permette di passare facilmente e rapidamente
@@ -255,6 +268,7 @@ Successivamente, il servizio invia queste liste di oggetti ClassificationLogEntr
 MainActivity tramite Intent broadcast. La MainActivity, a sua volta, utilizza questi oggetti per
 popolare la sua recentLogEntriesList e visualizzare i dati nel log scorrevole dell'interfaccia
 utente.
+
 5. MainActivity.java
 Questa è l'attività principale dell'applicazione, che gestisce l'interfaccia utente (UI) e
 l'interazione diretta con l'utente.
@@ -338,6 +352,7 @@ Interazione: Questo file XML viene gestito dalla MainActivity
 (setContentView(R.layout.activity_main)). Successivamente, la MainActivity accede ai vari
 elementi dell'interfaccia utente tramite i loro ID (findViewById()) per manipolarli, aggiornarne
 il contenuto e rispondere alle interazioni dell'utente.
+
 Conclusioni
 Il progetto KeyWord Spotting soddisfa tutti i requisiti minimi prefissati: integra e utilizza
 un modello TensorFlow Lite (.tflite) funzionante in locale (posizionato nella cartella assets
